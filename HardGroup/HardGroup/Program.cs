@@ -106,6 +106,84 @@ public class Program
             Console.WriteLine("P1: Ты принёс предмет?");
             Console.WriteLine("P2: Нет...");
         }
+        NPC npc1 = new NPC("Villager1");
+        NPC npc2 = new NPC("Villager2");
+
+        npc1.InteractWith(npc2);
+        npc1.ChangeNeed("Hunger", -20);
+        npc1.UpdateMood();
+
+        Console.WriteLine($"{npc1.Name} Mood: {npc1.Mood}, Relationships: {npc1.Relationships[npc2.Name]}");
+        Console.WriteLine($"{npc2.Name} Mood: {npc2.Mood}, Relationships: {npc2.Relationships[npc1.Name]}");
     }
 }
 
+public class NPC
+{
+    public string Name { get; set; }
+    public Dictionary<string, int> Relationships { get; private set; }
+    public int Mood { get; set; }
+    public List<string> Schedule { get; private set; }
+    public Dictionary<string, int> Needs { get; private set; }
+
+    public NPC(string name)
+    {
+        Name = name;
+        Relationships = new Dictionary<string, int>();
+        Mood = 100;
+        Schedule = new List<string>();
+        Needs = new Dictionary<string, int>
+        {
+            { "Hunger", 100 },
+            { "Thirst", 100 },
+            { "Energy", 100 }
+        };
+    }
+
+    public void ChangeRelationship(string otherNPC, int changeAmount)
+    {
+        if (Relationships.ContainsKey(otherNPC))
+        {
+            Relationships[otherNPC] += changeAmount;
+        }
+        else
+        {
+            Relationships[otherNPC] = changeAmount;
+        }
+    }
+
+    public void UpdateMood()
+    {
+
+        if (Needs["Hunger"] < 50 || Needs["Thirst"] < 50)
+        {
+            Mood -= 10;
+        }
+        else
+        {
+            Mood += 5;
+        }
+    }
+
+    public void AddToSchedule(string activity)
+    {
+        Schedule.Add(activity);
+    }
+
+    public void ChangeNeed(string need, int changeAmount)
+    {
+        if (Needs.ContainsKey(need))
+        {
+            Needs[need] = Math.Clamp(Needs[need] + changeAmount, 0, 100);
+        }
+    }
+
+    public void InteractWith(NPC otherNPC)
+    {
+
+        ChangeRelationship(otherNPC.Name, 5);
+        otherNPC.ChangeRelationship(Name, 5);
+        UpdateMood();
+        otherNPC.UpdateMood();
+    }
+}
